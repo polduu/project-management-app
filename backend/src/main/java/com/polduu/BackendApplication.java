@@ -1,4 +1,4 @@
-package com.polduu.backend;
+package com.polduu;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

@@ -1,0 +1,11 @@
+package com.polduu.dto.user; 
+
+import java.util.UUID;
+
+public record UserResponseDto(
+    UUID id,
+    String username,
+    String email,
+    String fullName,
+    String imageUrl
+) {}
