@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  # 1. Base de dades PostgreSQL
+  postgres:
+    image: postgres:16-alpine
+    container_name: postgres_db
+    restart: always
+    environment:
+      POSTGRES_DB: project_management
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: secretpassword
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - app-network
+
+  # 2. Backend (Spring Boot + Java 21)
+  backend:
+    build: ./backend
+    container_name: spring_backend
+    restart: always
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/project_management
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=secretpassword
+    ports:
+      - "9090:8080"
+    depends_on:
+      - postgres
+    networks:
+      - app-network
+
+  # 3. Frontend (React + Vite)
+  frontend:
+    build: ./frontend
+    container_name: react_frontend
+    restart: always
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    networks:
+      - app-network
+
+# Volums per guardar les dades de PostgreSQL permanentment
+volumes:
+  postgres_data:
+
+# Xarxa interna perquè els contenidors es comuniquin entre ells
+networks:
+  app-network:
+    driver: bridge
