@@ -88,7 +88,7 @@ public class UserService {
             throw new RuntimeException("Invalid password");
         }
 
-        String token = jwtService.generateToken(user.getUsername());
+        String token = jwtService.generateToken(user.getEmail());
         Long expiresIn = jwtService.getJwtExpirationTime(); // Get expiration time in seconds
 
         return new AuthResponseDto(
