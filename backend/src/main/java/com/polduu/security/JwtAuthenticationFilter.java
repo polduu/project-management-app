@@ -31,7 +31,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     {
         final String authHeader = request.getHeader("Authorization");
         final String token;
-        final String username;
+        final String email;
         
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
@@ -41,16 +41,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         token = authHeader.substring(7);
 
         try{
-            // Extract username from the token
-            username = jwtService.extractUsername(token);
+            // Extract email from the token
+            email = jwtService.extractEmail(token);
 
-            // Check if the username is not null and the user is not already authenticated
-            if(username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+            // Authenticate only when the request does not already have an authentication
+            if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 // If the token is valid, set the authentication in the security context
-                if (jwtService.isTokenValid(token, username)) {
+                if (jwtService.isTokenValid(token, email)) {
                     // Create an authentication token and set it in the security context
                     UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                            username,
+                            email,
                             null,
                             Collections.emptyList() // Here you can set authorities/roles if needed
                     );
@@ -60,10 +60,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     response.getWriter().write("Invalid JWT token");
                     return;
                 }
-            } else {
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                response.getWriter().write("Invalid JWT token");
-                return;
             }
         } catch (io.jsonwebtoken.JwtException | IllegalArgumentException e) {
             logger.error("User authentication failed at JwtAuthenticationFilter", e);
@@ -71,6 +67,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             response.getWriter().write("Invalid JWT token");
             return;
         }
+
+        filterChain.doFilter(request, response);
     }
     
 }

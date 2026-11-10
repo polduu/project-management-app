@@ -26,25 +26,27 @@ public class JwtService {
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
-    // Token generation method with username as the subject
-    public String generateToken(String username) {
+
+    // Token generation method with email as the subject
+    public String generateToken(String email) {
         return Jwts.builder()
-                .subject(username)
+                .subject(email)
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + jwtExpirationMs))
                 .signWith(getSigningKey())
                 .compact();
     }
 
-    // Extract the username (subject) from the token
-    public String extractUsername(String token) {
+
+    // Extract the email (subject) from the token
+    public String extractEmail(String token) {
         return extractClaim(token, Claims::getSubject);
     }
 
-    // Validate the token by checking if the username matches and if the token is not expired
-    public boolean isTokenValid(String token, String username) {
-        final String extractedUsername = extractUsername(token);
-        return (extractedUsername.equals(username)) && !isTokenExpired(token);
+    // Validate the token by checking if the email matches and if the token is not expired
+    public boolean isTokenValid(String token, String email) {
+        final String extractedEmail = extractEmail(token);
+        return (extractedEmail.equals(email)) && !isTokenExpired(token);
     }
 
     private boolean isTokenExpired(String token) {

@@ -66,7 +66,7 @@ public class UserService {
     }
 
     private AuthResponseDto ModelMapToDto(User user) {
-        String token = jwtService.generateToken(user.getUsername());
+        String token = jwtService.generateToken(user.getEmail());
         Long expiresIn = jwtService.getJwtExpirationTime(); // Get expiration time in seconds
         return new AuthResponseDto(
             token,
@@ -134,6 +134,20 @@ public class UserService {
             updatedUser.getEmail(),
             updatedUser.getFullName(),
             updatedUser.getImageUrl()
+        );
+    }
+
+    public UserResponseDto getUserByEmail(String email) {
+        
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Usuari no trobat"));
+
+        return new UserResponseDto(
+            user.getId(),
+            user.getUsername(),
+            user.getEmail(),
+            user.getFullName(),
+            user.getImageUrl()
         );
     }
 

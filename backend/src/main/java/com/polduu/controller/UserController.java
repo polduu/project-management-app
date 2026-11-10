@@ -1,6 +1,7 @@
 package com.polduu.controller;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -75,5 +76,11 @@ public class UserController {
         return ResponseEntity.ok(userService.updateUser(id, userPatchRequestDto));
     }
 
+    @GetMapping ("/me")
+    public ResponseEntity<UserResponseDto> getCurrentUserProfile(Authentication authentication) {
+        log.info("Fetching current user profile");
+        String userEmail = authentication.getName(); // Assuming you have a method to get the authenticated user's email
+        return ResponseEntity.ok(userService.getUserByEmail(userEmail));
+    }
 
 }
