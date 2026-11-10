@@ -9,17 +9,19 @@ import org.springframework.stereotype.Service;
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
+import java.util.UUID;
 import java.util.function.Function;
 
 @Service
 public class JwtService {
 
     // Secret key for signing the JWT token
-    @Value("${jwt.secret:la_teva_clau_secreta_super_llarga_i_segura_per_al_projecte_polduu_123456}")
+    @Value("${jwt.secret}")
     private String secretKey;
 
     // Expiration time of the token (for example, 15 minutes in milliseconds)
-    private final long jwtExpirationMs = 900000; 
+    @Value ("${jwt.expiration:900000}")
+    private long jwtExpirationMs; 
 
     private SecretKey getSigningKey() {
         byte[] keyBytes = secretKey.getBytes(StandardCharsets.UTF_8);
@@ -27,10 +29,11 @@ public class JwtService {
     }
 
 
-    // Token generation method with email as the subject
-    public String generateToken(String email) {
+
+    // Token generation method with userId as the subject
+    public String generateToken(UUID userId) {
         return Jwts.builder()
-                .subject(email)
+                .subject(userId.toString())
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + jwtExpirationMs))
                 .signWith(getSigningKey())
@@ -38,23 +41,11 @@ public class JwtService {
     }
 
 
-    // Extract the email (subject) from the token
-    public String extractEmail(String token) {
-        return extractClaim(token, Claims::getSubject);
-    }
-
-    // Validate the token by checking if the email matches and if the token is not expired
-    public boolean isTokenValid(String token, String email) {
-        final String extractedEmail = extractEmail(token);
-        return (extractedEmail.equals(email)) && !isTokenExpired(token);
-    }
-
-    private boolean isTokenExpired(String token) {
-        return extractExpiration(token).before(new Date());
-    }
-
-    private Date extractExpiration(String token) {
-        return extractClaim(token, Claims::getExpiration);
+    // Extract the UserId (subject) from the token
+    public UUID extractUserId(String token) {
+        String subject = extractClaim(token, Claims::getSubject);
+        if (subject == null) throw new io.jsonwebtoken.JwtException("Missing subject");
+        return UUID.fromString(subject);
     }
 
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {

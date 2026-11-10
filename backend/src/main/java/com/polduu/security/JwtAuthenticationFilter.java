@@ -3,72 +3,48 @@ package com.polduu.security;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.jwt.JwtException;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.UUID;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-@Component 
+@Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
-    
+
     private final JwtService jwtService;
 
-    
     public JwtAuthenticationFilter(JwtService jwtService) {
         this.jwtService = jwtService;
     }
 
-    @Override 
-    protected void doFilterInternal(@NonNull HttpServletRequest request, 
-        @NonNull HttpServletResponse response, @NonNull FilterChain filterChain)
-        throws ServletException, IOException 
-    {
+    @Override
+    protected void doFilterInternal(@NonNull HttpServletRequest request,
+            @NonNull HttpServletResponse response, @NonNull FilterChain filterChain)
+            throws ServletException, IOException {
+
         final String authHeader = request.getHeader("Authorization");
-        final String token;
-        final String email;
-        
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            filterChain.doFilter(request, response);
-            return;
-        }
 
-        token = authHeader.substring(7);
-
-        try{
-            // Extract email from the token
-            email = jwtService.extractEmail(token);
-
-            // Authenticate only when the request does not already have an authentication
-            if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                // If the token is valid, set the authentication in the security context
-                if (jwtService.isTokenValid(token, email)) {
-                    // Create an authentication token and set it in the security context
-                    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                            email,
-                            null,
-                            Collections.emptyList() // Here you can set authorities/roles if needed
-                    );
-                    SecurityContextHolder.getContext().setAuthentication(authToken);    
-                } else {
-                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                    response.getWriter().write("Invalid JWT token");
-                    return;
-                }
+            if (authHeader != null && authHeader.startsWith("Bearer ")
+                && SecurityContextHolder.getContext().getAuthentication() == null) {
+            try {
+                UUID userId = jwtService.extractUserId(authHeader.substring(7));
+                SecurityContextHolder.getContext().setAuthentication(
+                        new UsernamePasswordAuthenticationToken(userId, null, Collections.emptyList()));
+            } catch (JwtException | IllegalArgumentException e) {
+                // Token invàlid/caducat: no autentiquem; l'EntryPoint respondrà 401 si cal
+                logger.debug("Invalid JWT: " + e.getMessage());
+                SecurityContextHolder.clearContext();
             }
-        } catch (io.jsonwebtoken.JwtException | IllegalArgumentException e) {
-            logger.error("User authentication failed at JwtAuthenticationFilter", e);
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.getWriter().write("Invalid JWT token");
-            return;
         }
 
         filterChain.doFilter(request, response);
     }
-    
 }
