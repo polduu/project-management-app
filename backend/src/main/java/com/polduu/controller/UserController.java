@@ -37,13 +37,13 @@ public class UserController {
         return userService.createUser(user);
     }
 
-    @PostMapping ("/GOOGLE")
+    @PostMapping ("/google")
     public AuthResponseDto googleLogin(@Valid @RequestBody GoogleAuthRequestDto googleAuthRequest) {
         log.info("Google login endpoint hit: {}", googleAuthRequest);
         return userService.googleLogin(googleAuthRequest);
     }
 
-    @PostMapping ("/GITHUB")
+    @PostMapping ("/github")
     public AuthResponseDto githubLogin(@Valid @RequestBody GitHubAuthRequestDto githubAuthRequest) {
         log.info("GitHub login endpoint hit: {}", githubAuthRequest);
         return userService.githubLogin(githubAuthRequest);
@@ -61,7 +61,7 @@ public class UserController {
         return ResponseEntity.ok(userService.getUserById(id));
     }
 
-    @GetMapping 
+    @GetMapping ("/all")
     public List<UserResponseDto> getAllUsers() {
         log.info("Fetching all users");
         return userService.getAllUsers();
