@@ -10,21 +10,25 @@ import com.polduu.dto.user.*;
 import com.polduu.model.AuthProvider;
 import com.polduu.model.User;
 import com.polduu.repository.UserRepository;
+import com.polduu.security.JwtService;
 
 @Service 
 public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
 
     
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtService jwtService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.jwtService = jwtService;
     }
 
     public AuthResponseDto createUser(UserRegisterRequestDto user) {
         User newUser = DtoMapToModel(user);
+
         User savedUser = userRepository.save(newUser);
         return ModelMapToDto(savedUser);
     }
@@ -62,10 +66,12 @@ public class UserService {
     }
 
     private AuthResponseDto ModelMapToDto(User user) {
+        String token = jwtService.generateToken(user.getUsername());
+        Long expiresIn = jwtService.getJwtExpirationTime(); // Get expiration time in seconds
         return new AuthResponseDto(
-            "JWT_TOKEN", // Placeholder for JWT token generation
+            token,
             "REFRESH_TOKEN", // Placeholder for refresh token generation
-            900L, // Ex: 900 (segons)
+            expiresIn, // Ex: 900 (segons)
             user.getId(),
             user.getUsername(),
             user.getEmail(),
@@ -82,13 +88,13 @@ public class UserService {
             throw new RuntimeException("Invalid password");
         }
 
-        // Placeholder for JWT token generation
-        String token = "JWT_TOKEN";
+        String token = jwtService.generateToken(user.getUsername());
+        Long expiresIn = jwtService.getJwtExpirationTime(); // Get expiration time in seconds
 
         return new AuthResponseDto(
             token,
             "REFRESH_TOKEN",
-            900L,
+            expiresIn,
             user.getId(),
             user.getUsername(),
             user.getEmail(),
