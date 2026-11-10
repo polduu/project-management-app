@@ -56,4 +56,10 @@ public class AuthController {
         return userService.refreshToken(refreshTokenRequest);
     }
 
+    @PostMapping ("/logout")
+    public void logoutUser(@Valid @RequestBody RefreshTokenRequestDto refreshTokenRequest) {
+        log.info("Logout endpoint hit");
+        userService.logoutUser(refreshTokenRequest);
+    }
+
 }

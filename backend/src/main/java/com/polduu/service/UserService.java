@@ -167,6 +167,10 @@ public class UserService {
         );
     }
 
+    public void logoutUser(RefreshTokenRequestDto request) {
+        refreshTokenService.deleteByToken(request.refreshToken());
+    }
+
 
 
     
