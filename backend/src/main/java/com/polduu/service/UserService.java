@@ -160,7 +160,6 @@ public class UserService {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
         return new PublicUserResponseDto(
-            user.getEmail(),
             user.getUsername(),
             user.getFullName(),
             user.getImageUrl()

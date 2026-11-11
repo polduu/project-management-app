@@ -66,6 +66,13 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 "Invalid value for parameter '" + ex.getPropertyName() + "'", request, null);
     }
 
+    // 400: invalid argument passed to a method (e.g. null UUID)
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<Object> handleIllegalArgument(
+            IllegalArgumentException ex, WebRequest request) {
+        return error(HttpStatus.BAD_REQUEST, ex.getMessage(), request, null);
+    }
+
     // 400: required query parameter is missing
     @Override
     protected ResponseEntity<Object> handleMissingServletRequestParameter(

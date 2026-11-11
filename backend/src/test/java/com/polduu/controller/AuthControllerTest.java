@@ -52,9 +52,9 @@ class AuthControllerTest {
                         .content("""
                         {"email":"pol@test.com","password":"secret123"}
                         """))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.accessToken").value("access"))
-                .andExpect(jsonPath("$.refreshToken").value("refresh"));
+                        .andExpect(status().isOk())
+                        .andExpect(jsonPath("$.accessToken").value("access"))
+                        .andExpect(jsonPath("$.refreshToken").value("refresh"));
         }
 
         @Test
@@ -67,8 +67,8 @@ class AuthControllerTest {
                         .content("""
                         {"email":"pol@test.com","password":"wrong"}
                         """))
-                .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.message").value("Invalid credentials"));
+                        .andExpect(status().isUnauthorized())
+                        .andExpect(jsonPath("$.message").value("Invalid credentials"));
         }
 
         @Test
@@ -76,14 +76,14 @@ class AuthControllerTest {
                 mockMvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{}"))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.fieldErrors").exists());
+                        .andExpect(status().isBadRequest())
+                        .andExpect(jsonPath("$.fieldErrors").exists());
         }
 
         @Test
         void login_withExpiredBearerToken_stillWorks() throws Exception {
-        when(jwtService.extractUserId(any())).thenThrow(new JwtException("expired"));
-        when(userService.logInUser(any())).thenReturn(new AuthResponseDto("access", "refresh", 900L,
+                when(jwtService.extractUserId(any())).thenThrow(new JwtException("expired"));
+                when(userService.logInUser(any())).thenReturn(new AuthResponseDto("access", "refresh", 900L,
                 new UserResponseDto(UUID.randomUUID(), "pol", "pol@test.com", "Pol", null)));
 
         mockMvc.perform(post("/api/auth/login")
@@ -97,19 +97,19 @@ class AuthControllerTest {
 
         @Test
         void login_withMalformedJson_returns400() throws Exception {
-        mockMvc.perform(post("/api/auth/login")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("{not json"))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message").value("Malformed request body"));
+                mockMvc.perform(post("/api/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{not json"))
+                        .andExpect(status().isBadRequest())
+                        .andExpect(jsonPath("$.message").value("Malformed request body"));
         }
 
         @Test
         void login_withWrongContentType_returns415() throws Exception {
-        mockMvc.perform(post("/api/auth/login")
-                .contentType(MediaType.TEXT_PLAIN)
-                .content("hello"))
-                .andExpect(status().isUnsupportedMediaType());
+                mockMvc.perform(post("/api/auth/login")
+                        .contentType(MediaType.TEXT_PLAIN)
+                        .content("hello"))
+                        .andExpect(status().isUnsupportedMediaType());
         }
 
         /*------------------------------------------------------------------------------------------------*/
@@ -156,25 +156,25 @@ class AuthControllerTest {
 
         @Test
         void register_withInvalidEmail_returns400() throws Exception {
-        mockMvc.perform(post("/api/auth/register")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("""
-                        {"username":"pol","email":"not-an-email","password":"secret123","name":"Pol"}
-                        """))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.fieldErrors.email").exists());
+                mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"username":"pol","email":"not-an-email","password":"secret123","name":"Pol"}
+                                """))
+                        .andExpect(status().isBadRequest())
+                        .andExpect(jsonPath("$.fieldErrors.email").exists());
         }
 
         @Test
         void register_withShortPassword_returns400() throws Exception {
-        mockMvc.perform(post("/api/auth/register")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("""
-                        {"username":"pol","email":"pol@test.com","password":"123","name":"Pol"}
-                        """))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.fieldErrors.password").exists());
-}
+                mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"username":"pol","email":"pol@test.com","password":"123","name":"Pol"}
+                                """))
+                        .andExpect(status().isBadRequest())
+                        .andExpect(jsonPath("$.fieldErrors.password").exists());
+        }
 
         /*------------------------------------------------------------------------------------------------*/
 
@@ -191,9 +191,9 @@ class AuthControllerTest {
                         .content("""
                         {"refreshToken":"refresh"}
                         """))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.accessToken").value("access"))
-                .andExpect(jsonPath("$.refreshToken").value("refresh"));
+                        .andExpect(status().isOk())
+                        .andExpect(jsonPath("$.accessToken").value("access"))
+                        .andExpect(jsonPath("$.refreshToken").value("refresh"));
         }
 
         @Test 
@@ -201,8 +201,8 @@ class AuthControllerTest {
                 mockMvc.perform(post("/api/auth/refresh")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{}"))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.fieldErrors").exists());
+                        .andExpect(status().isBadRequest())
+                        .andExpect(jsonPath("$.fieldErrors").exists());
         }
 
         @Test
@@ -215,8 +215,8 @@ class AuthControllerTest {
                         .content("""
                         {"refreshToken":"invalid"}
                         """))
-                .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.message").value("Invalid refresh token"));
+                        .andExpect(status().isUnauthorized())
+                        .andExpect(jsonPath("$.message").value("Invalid refresh token"));
         }
 
         /*------------------------------------------------------------------------------------------------*/
@@ -240,8 +240,8 @@ class AuthControllerTest {
                 mockMvc.perform(post("/api/auth/logout")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{}"))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.fieldErrors").exists());
+                        .andExpect(status().isBadRequest())
+                        .andExpect(jsonPath("$.fieldErrors").exists());
         }
 
 }
