@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import com.polduu.dto.user.*;
 import com.polduu.exception.ConflictException;
+import com.polduu.exception.InvalidCredentialsException;
 import com.polduu.exception.InvalidRefreshTokenException;
 import com.polduu.exception.ResourceNotFoundException;
 import com.polduu.model.AuthProvider;
@@ -83,10 +84,10 @@ public class UserService {
     public AuthResponseDto logInUser(UserLoginRequestDto request) {
         
         User user = userRepository.findByEmail(request.email())
-                .orElseThrow(() -> new ConflictException("Invalid credentials"));
+                .orElseThrow(() -> new InvalidCredentialsException());
 
         if (!passwordEncoder.matches(request.password(), user.getPasswordHash())) {
-            throw new ConflictException("Invalid credentials");
+            throw new InvalidCredentialsException();
         }
 
         String token = jwtService.generateToken(user.getId());
@@ -122,18 +123,19 @@ public class UserService {
         return toUserResponseDto(updatedUser);
     }
 
-    @Transactional (noRollbackFor = InvalidRefreshTokenException.class)
+    @Transactional(noRollbackFor = InvalidRefreshTokenException.class)
     public AuthResponseDto refreshToken(RefreshTokenRequestDto refreshTokenRequest) {
-        
-        String requestRefreshToken = refreshTokenRequest.refreshToken();
 
-        return refreshTokenService.findByToken(requestRefreshToken)
-                .map(refreshTokenService::verifyExpiration)
-                .map(refreshToken -> {
-                    String token = jwtService.generateToken(refreshToken.getUser().getId());
-                    return toAuthResponseDto(refreshToken.getUser(), token, refreshToken.getToken());
-                })
-                .orElseThrow(() -> new ResourceNotFoundException("Refresh token is not in database!"));
+        RefreshToken current = refreshTokenService.findByToken(refreshTokenRequest.refreshToken())
+                .orElseThrow(() -> new InvalidRefreshTokenException("Invalid refresh token"));
+
+        refreshTokenService.verifyExpiration(current);
+
+        User user = current.getUser();
+        String accessToken = jwtService.generateToken(user.getId());
+        RefreshToken rotated = refreshTokenService.renewRefreshToken(user);
+
+        return toAuthResponseDto(user, accessToken, rotated.getToken());
     }
 
     private UserResponseDto toUserResponseDto(User user) {

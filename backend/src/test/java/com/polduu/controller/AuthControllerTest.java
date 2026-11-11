@@ -39,12 +39,18 @@ class AuthControllerTest {
         @MockBean UserService userService;
         @MockBean JwtService jwtService; // lo necesita JwtAuthenticationFilter
 
+        private static final String EMAIL = "pol@test.com";
+        private static final String USERNAME = "pol";
+        private static final String FULLNAME = "Pol";
+        private static final String REFRESH_TOKEN = "refresh";
+        private static final String ACCESS_TOKEN = "access";
+
         // Login Tests
 
         @Test
         void login_withValidCredentials_returns200() throws Exception {
-                var response = new AuthResponseDto("access", "refresh", 900L,
-                        new UserResponseDto(UUID.randomUUID(), "pol", "pol@test.com", "Pol", null));
+                var response = new AuthResponseDto(ACCESS_TOKEN, REFRESH_TOKEN, 900L,
+                        new UserResponseDto(UUID.randomUUID(), USERNAME, EMAIL, FULLNAME, null));
                 when(userService.logInUser(any())).thenReturn(response);
 
                 mockMvc.perform(post("/api/auth/login")
@@ -83,8 +89,8 @@ class AuthControllerTest {
         @Test
         void login_withExpiredBearerToken_stillWorks() throws Exception {
                 when(jwtService.extractUserId(any())).thenThrow(new JwtException("expired"));
-                when(userService.logInUser(any())).thenReturn(new AuthResponseDto("access", "refresh", 900L,
-                new UserResponseDto(UUID.randomUUID(), "pol", "pol@test.com", "Pol", null)));
+                when(userService.logInUser(any())).thenReturn(new AuthResponseDto(ACCESS_TOKEN, REFRESH_TOKEN, 900L,
+                new UserResponseDto(UUID.randomUUID(), USERNAME, EMAIL, FULLNAME, null)));
 
         mockMvc.perform(post("/api/auth/login")
                 .header("Authorization", "Bearer expired.token")
@@ -117,8 +123,8 @@ class AuthControllerTest {
         // Register Tests
         @Test
         void register_withValidBody_returns201() throws Exception {
-                var response = new AuthResponseDto("access", "refresh", 900L, 
-                        new UserResponseDto(UUID.randomUUID(), "pol", "pol@test.com", "Pol", null));
+                var response = new AuthResponseDto(ACCESS_TOKEN, REFRESH_TOKEN, 900L, 
+                        new UserResponseDto(UUID.randomUUID(), USERNAME, EMAIL, FULLNAME, null));
                 when(userService.createUser(any())).thenReturn(response);
 
                 mockMvc.perform(post("/api/auth/register")
@@ -182,8 +188,8 @@ class AuthControllerTest {
 
         @Test 
         void refreshToken_withValidBody_returns200() throws Exception {
-                var response = new AuthResponseDto("access", "refresh", 900L, 
-                        new UserResponseDto(UUID.randomUUID(), "pol", "pol@test.com", "Pol", null));
+                var response = new AuthResponseDto(ACCESS_TOKEN, REFRESH_TOKEN, 900L, 
+                        new UserResponseDto(UUID.randomUUID(), USERNAME, EMAIL, FULLNAME, null));
                 when(userService.refreshToken(any())).thenReturn(response);
 
                 mockMvc.perform(post("/api/auth/refresh")

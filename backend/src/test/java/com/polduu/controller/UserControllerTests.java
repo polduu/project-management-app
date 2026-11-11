@@ -43,6 +43,10 @@ class UserControllerTest {
     @MockBean JwtService jwtService;
     @MockBean UserService userService;
 
+    private static final String EMAIL = "pol@test.com";
+    private static final String USERNAME = "pol";
+    private static final String FULLNAME = "Pol";
+
     // Authenticates the request with a UUID principal, like JwtAuthenticationFilter does
     private static RequestPostProcessor authenticatedAs(UUID userId) {
         return authentication(new UsernamePasswordAuthenticationToken(userId, null, List.of()));
@@ -56,13 +60,13 @@ class UserControllerTest {
     void getUserProfile_withValidId_returnsPublicProfileWithoutEmail() throws Exception {
         UUID id = UUID.randomUUID();
         when(userService.getPublicProfileById(id))
-                .thenReturn(new PublicUserResponseDto("pol", "Pol", null));
+                .thenReturn(new PublicUserResponseDto(USERNAME, FULLNAME, null));
 
         mockMvc.perform(get("/api/users/{id}", id)
                 .with(authenticatedAs(UUID.randomUUID())))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.username").value("pol"))
-                .andExpect(jsonPath("$.fullName").value("Pol"))
+                .andExpect(jsonPath("$.username").value(USERNAME))
+                .andExpect(jsonPath("$.fullName").value(FULLNAME))
                 .andExpect(jsonPath("$.email").doesNotExist());
 
         verify(userService).getPublicProfileById(id);
@@ -101,15 +105,15 @@ class UserControllerTest {
     void getCurrentUserProfile_returnsProfileOfAuthenticatedUser() throws Exception {
         UUID userId = UUID.randomUUID();
         when(userService.getUserById(userId))
-                .thenReturn(new UserResponseDto(userId, "pol", "pol@test.com", "Pol", null));
+                .thenReturn(new UserResponseDto(userId, USERNAME, EMAIL, FULLNAME, null));
 
         mockMvc.perform(get("/api/users/me")
                 .with(authenticatedAs(userId)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(userId.toString()))
-                .andExpect(jsonPath("$.email").value("pol@test.com"))
-                .andExpect(jsonPath("$.username").value("pol"))
-                .andExpect(jsonPath("$.fullName").value("Pol"));
+                .andExpect(jsonPath("$.email").value(EMAIL))
+                .andExpect(jsonPath("$.username").value(USERNAME))
+                .andExpect(jsonPath("$.fullName").value(FULLNAME));
 
         verify(userService).getUserById(userId);
     }
@@ -139,7 +143,7 @@ class UserControllerTest {
     void updateUserProfile_withValidData_returnsUpdatedProfile() throws Exception {
         UUID userId = UUID.randomUUID();
         when(userService.updateUserById(eq(userId), any(UserPatchRequestDto.class)))
-                .thenReturn(new UserResponseDto(userId, "newusername", "pol@test.com", "New Full Name", null));
+                .thenReturn(new UserResponseDto(userId, "newusername", EMAIL, "New Full Name", null));
 
         mockMvc.perform(patch("/api/users/me")
                 .with(authenticatedAs(userId))
@@ -209,13 +213,13 @@ class UserControllerTest {
     @Test
     void getAllUsers_returnsListOfUsers() throws Exception {
         when(userService.getAllUsers()).thenReturn(List.of(
-                new UserResponseDto(UUID.randomUUID(), "pol", "pol@test.com", "Pol", null),
+                new UserResponseDto(UUID.randomUUID(), USERNAME, EMAIL, FULLNAME, null),
                 new UserResponseDto(UUID.randomUUID(), "lusix", "lucia@test.com", "Lucia", null)));
 
         mockMvc.perform(get("/api/users/all")
                 .with(authenticatedAs(UUID.randomUUID())))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].username").value("pol"))
+                .andExpect(jsonPath("$[0].username").value(USERNAME))
                 .andExpect(jsonPath("$[1].username").value("lusix"));
     }
 }
