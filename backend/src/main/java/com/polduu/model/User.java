@@ -37,28 +37,28 @@ public class User {
 
     @Email 
     @NotBlank 
-    @Column (unique = true, nullable = false)    
+    @Column (unique = true, nullable = false, length = 255)    
     private String email;
 
-    @Column (name = "image_url")
+    @Column (name = "image_url", length = 500)
     private String imageUrl;
 
-    @Column (name = "password_hash")
+    @Column (name = "password_hash", length = 60)
     private String passwordHash;
 
     @NotBlank
-    @Column (unique = true, nullable = false)
+    @Column (unique = true, nullable = false, length = 50)
     private String username;
 
-    @NotBlank 
-    @Column (name = "full_name", nullable = false)
+    @NotBlank
+    @Column (name = "full_name", nullable = false, length = 100)
     private String fullName;
 
     @Enumerated (EnumType.STRING)
     @Column (name = "auth_provider", nullable = false)
     private AuthProvider authProvider;
 
-    @CreationTimestamp 
+    @CreationTimestamp
     @Column (name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
